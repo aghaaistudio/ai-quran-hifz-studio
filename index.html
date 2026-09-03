@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quran Studio — AI Quran Recitation & Hifz Assistant</title>
+    <!-- Google Fonts & Lucide Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- ==========================================
+         SIDEBAR (ENGLISH ONLY UI)
+         ========================================== -->
+    <aside class="sidebar">
+        <div>
+            <div class="brand">
+                <div class="brand-icon">
+                    <i data-lucide="book-open"></i>
+                </div>
+                <div class="brand-text">
+                    <h2>Quran Studio</h2>
+                    <p>AI Quran Assistant</p>
+                </div>
+            </div>
+
+            <ul class="nav-list" id="sidebarNav">
+                <li class="nav-item active" data-view="dashboard"><i data-lucide="layout-dashboard"></i> <span>Dashboard</span></li>
+                <li class="nav-item" data-view="recitation"><i data-lucide="mic"></i> <span>Quran Recitation</span></li>
+                <li class="nav-item" data-view="hifz"><i data-lucide="bookmark"></i> <span>Hifz Practice</span></li>
+                <li class="nav-item" data-view="revision"><i data-lucide="rotate-ccw"></i> <span>Revision</span></li>
+                <li class="nav-item" data-view="translation"><i data-lucide="languages"></i> <span>Translation</span></li>
+                <li class="nav-item" data-view="qna"><i data-lucide="help-circle"></i> <span>Ask Question</span></li>
+                <li class="nav-item" data-view="history"><i data-lucide="history"></i> <span>Recitation History</span></li>
+                <li class="nav-item" data-view="mistakes"><i data-lucide="alert-circle"></i> <span>Mistake History</span></li>
+                <li class="nav-item" data-view="audio-lab"><i data-lucide="sliders"></i> <span>Audio Enhancement</span></li>
+                <li class="nav-item" data-view="settings"><i data-lucide="settings"></i> <span>Settings</span></li>
+            </ul>
+        </div>
+
+        <!-- System 1: Assistant Language Switcher (Complete 20 Languages) -->
+        <div class="sidebar-bottom">
+            <div class="lang-selector-box">
+                <label>ASSISTANT LANGUAGE</label>
+                <select id="assistantLangSelect" onchange="updateAssistantLanguage(this.value)">
+                    <option value="en" selected>English</option>
+                    <option value="ur">Urdu — اردو</option>
+                    <option value="ar">Arabic — العربية</option>
+                    <option value="hi">Hindi — हिन्दी</option>
+                    <option value="bn">Bengali — বাংলা</option>
+                    <option value="id">Indonesian — Bahasa Indonesia</option>
+                    <option value="tr">Turkish — Türkçe</option>
+                    <option value="fa">Persian — فارسی</option>
+                    <option value="fr">French — Français</option>
+                    <option value="es">Spanish — Español</option>
+                    <option value="zh">Chinese — 中文</option>
+                    <option value="ru">Russian — Русский</option>
+                    <option value="ms">Malay — Bahasa Melayu</option>
+                    <option value="pt">Portuguese — Português</option>
+                    <option value="de">German — Deutsch</option>
+                    <option value="it">Italian — Italiano</option>
+                    <option value="ps">Pashto — پښتو</option>
+                    <option value="so">Somali — Soomaali</option>
+                    <option value="sw">Swahili — Kiswahili</option>
+                    <option value="kk">Kazakh — Қазақша</option>
+                </select>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==========================================
+         MAIN CONTENT AREA
+         ========================================== -->
+    <main class="main-wrapper">
+        
+        <!-- Header -->
+        <header class="header">
+            <div class="user-greeting">
+                <h1>Assalamu Alaikum</h1>
+                <p>Continue your Quran journey with focus and sincerity.</p>
+            </div>
+
+            <div class="header-actions">
+                <div class="search-bar">
+                    <i data-lucide="search" style="color:var(--text-secondary); width:16px;"></i>
+                    <input type="text" id="globalSearchInput" placeholder="Search Surah, Ayah or Topic..." onkeyup="handleGlobalSearch(this.value)">
+                    <div id="searchResults" class="search-results-dropdown"></div>
+                </div>
+
+                <div class="date-badge">
+                    <i data-lucide="calendar" style="width:16px;"></i>
+                    <span id="currentDateStr">Loading...</span>
+                </div>
+
+                <button class="icon-btn" onclick="toggleNotifications()" title="Notifications">
+                    <i data-lucide="bell" style="width:18px;"></i>
+                    <span class="notification-dot" id="notifDot"></span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dynamic Views Area -->
+        <div id="viewsContainer">
+            
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="workspace-view active">
+                <div class="dashboard-grid">
+                    
+                    <!-- 1. Current Recitation Card -->
+                    <div class="card card-current-recitation">
+                        <div class="card-title">
+                            <span>Current Recitation</span>
+                            <span class="arabic-sub" id="dashSurahArabic">البقرة</span>
+                        </div>
+
+                        <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
+                            <div>
+                                <p style="font-size:0.75rem; color:var(--text-secondary);">Surah</p>
+                                <p style="font-weight:700; color:var(--primary-green);" id="dashSurahName">Al-Baqarah</p>
+                            </div>
+                            <div style="text-align:right;">
+                                <p style="font-size:0.75rem; color:var(--text-secondary);">Ayah</p>
+                                <p style="font-weight:700; color:var(--primary-green);" id="dashAyahNum">25</p>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:16px;">
+                            <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-bottom:4px;">
+                                <span>Recitation Progress</span>
+                                <span style="font-weight:700;" id="dashProgressPct">0%</span>
+                            </div>
+                            <div class="progress-bar-bg" style="width:100%;">
+                                <div class="progress-bar-fill" id="dashProgressBar" style="width:0%;"></div>
+                            </div>
+                        </div>
+
+                        <button class="btn-primary" onclick="switchView('recitation')">
+                            <i data-lucide="mic"></i> <span>Open Recitation Studio</span>
+                        </button>
+                    </div>
+
+                    <!-- 2. Today's Performance Card -->
+                    <div class="card card-today-performance">
+                        <div class="card-title">Today's Performance</div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px;">
+                            <div style="background:var(--bg-main); padding:10px; border-radius:var(--radius-md);">
+                                <p style="font-size:0.7rem; color:var(--text-secondary);">Ayahs Recited</p>
+                                <p style="font-size:1.3rem; font-weight:700; color:var(--primary-green);" id="statAyahsRecited">0</p>
+                            </div>
+                            <div style="background:var(--bg-main); padding:10px; border-radius:var(--radius-md);">
+                                <p style="font-size:0.7rem; color:var(--text-secondary);">Mistakes</p>
+                                <p style="font-size:1.3rem; font-weight:700; color:var(--status-error);" id="statMistakes">0</p>
+                            </div>
+                            <div style="background:var(--bg-main); padding:10px; border-radius:var(--radius-md);">
+                                <p style="font-size:0.7rem; color:var(--text-secondary);">Corrected</p>
+                                <p style="font-size:1.3rem; font-weight:700; color:var(--status-success);" id="statCorrected">0</p>
+                            </div>
+                            <div style="background:var(--bg-main); padding:10px; border-radius:var(--radius-md);">
+                                <p style="font-size:0.7rem; color:var(--text-secondary);">Time</p>
+                                <p style="font-size:1.3rem; font-weight:700; color:var(--primary-green);" id="statTime">0m 0s</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Qari Assistant Card -->
+                    <div class="card card-qari-assistant">
+                        <div class="card-title">Qari Assistant</div>
+                        <div class="qari-container">
+                            <div class="qari-avatar-frame" onclick="toggleQariDropdown()">
+                                <img id="qariAvatarImg" src="https://i.postimg.cc/W3gk1JWX/FB-IMG-1788344191399.jpg" alt="Qari Sheikh Abdul Rahman Al-Sudais">
+                            </div>
+                            
+                            <div class="qari-selector-wrapper">
+                                <button class="qari-select-btn" onclick="toggleQariDropdown()">
+                                    <span id="qariDisplayName">Sheikh Abdul Rahman Al-Sudais</span>
+                                    <i data-lucide="chevron-down" style="width:14px;"></i>
+                                </button>
+                                <div class="qari-dropdown-menu" id="qariDropdownMenu">
+                                    <div class="qari-option" onclick="selectQari('sudais')">
+                                        <img src="https://i.postimg.cc/W3gk1JWX/FB-IMG-1788344191399.jpg" alt="Sudais">
+                                        <span>Sheikh Abdul Rahman Al-Sudais</span>
+                                    </div>
+                                    <div class="qari-option" onclick="selectQari('alafasy')">
+                                        <img src="https://i.postimg.cc/q7kKvRfs/images-(1).jpg" alt="Alafasy">
+                                        <span>Sheikh Mishary Rashid Alafasy</span>
+                                    </div>
+                                    <div class="qari-option" onclick="selectQari('basit')">
+                                        <img src="https://i.postimg.cc/vm3VgsbD/images.jpg" alt="Abdul Basit">
+                                        <span>Sheikh Abdul Basit Abdul Samad</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="qariStatusPill" class="status-pill status-stopped">
+                                <i data-lucide="radio" style="width:12px;"></i>
+                                <span id="qariStatusText">Standby</span>
+                            </div>
+
+                            <div id="aiVoiceFeedback" style="font-size:0.8rem; font-weight:600; color:var(--primary-green); margin-top:6px;">
+                                "Ready to listen"
+                            </div>
+
+                            <div class="waveform" id="dashWaveform">
+                                <div class="wave-bar"></div><div class="wave-bar"></div>
+                                <div class="wave-bar"></div><div class="wave-bar"></div>
+                                <div class="wave-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Access Bar -->
+                    <div class="card card-quick-access">
+                        <div class="card-title">Quick Access</div>
+                        <div class="quick-grid">
+                            <div class="quick-btn" onclick="switchView('recitation')"><i data-lucide="mic"></i><span>Quran Recitation</span></div>
+                            <div class="quick-btn" onclick="switchView('hifz')"><i data-lucide="book-open"></i><span>Hifz Practice</span></div>
+                            <div class="quick-btn" onclick="switchView('revision')"><i data-lucide="rotate-ccw"></i><span>Revision</span></div>
+                            <div class="quick-btn" onclick="switchView('translation')"><i data-lucide="languages"></i><span>Translation</span></div>
+                            <div class="quick-btn" onclick="switchView('qna')"><i data-lucide="help-circle"></i><span>Ask Question</span></div>
+                            <div class="quick-btn" onclick="switchView('audio-lab')"><i data-lucide="sliders"></i><span>Audio Enhance</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Sessions & Mistake Overview -->
+                    <div class="card card-recent-sessions">
+                        <div class="card-title">Recent Sessions <a href="#" onclick="switchView('history'); return false;" style="font-size:0.75rem; color:var(--accent-gold); text-decoration:none;">View All</a></div>
+                        <div id="dashRecentSessionsList">
+                            <p style="font-size:0.8rem; color:var(--text-secondary); text-align:center; padding:12px;">No sessions recorded yet.</p>
+                        </div>
+                    </div>
+
+                    <div class="card card-mistake-overview">
+                        <div class="card-title">Mistake Overview</div>
+                        <div class="mistake-bar-group">
+                            <div class="mistake-bar-item">
+                                <span>Wrong Word</span>
+                                <div class="progress-bar-bg"><div class="progress-bar-fill" id="barWrongWord" style="width:0%; background:var(--status-error);"></div></div>
+                                <span style="font-weight:700;" id="cntWrongWord">0</span>
+                            </div>
+                            <div class="mistake-bar-item">
+                                <span>Omitted Word</span>
+                                <div class="progress-bar-bg"><div class="progress-bar-fill" id="barOmittedWord" style="width:0%; background:var(--status-warning);"></div></div>
+                                <span style="font-weight:700;" id="cntOmittedWord">0</span>
+                            </div>
+                            <div class="mistake-bar-item">
+                                <span>Extra Word</span>
+                                <div class="progress-bar-bg"><div class="progress-bar-fill" id="barExtraWord" style="width:0%; background:var(--status-success);"></div></div>
+                                <span style="font-weight:700;" id="cntExtraWord">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Goals & Review -->
+                    <div class="card card-today-goal" style="background:var(--primary-green); color:#fff;">
+                        <div class="card-title" style="color:var(--bright-gold);">Today's Goal</div>
+                        <div style="display:flex; align-items:center; gap:20px;">
+                            <div style="width:70px; height:70px; border-radius:50%; border:4px solid var(--bright-gold); display:flex; align-items:center; justify-content:center; font-size:1.2rem; font-weight:700;" id="goalPct">
+                                0%
+                            </div>
+                            <div>
+                                <p style="font-size:0.75rem; opacity:0.8;">Target Ayahs Goal: 30</p>
+                                <p style="font-size:1.1rem; font-weight:700; color:var(--bright-gold);" id="goalProgressTxt">0 Completed</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-next-review">
+                        <div class="card-title">Next Review</div>
+                        <p style="font-weight:700; color:var(--primary-green);">Surah Al-Fatiha & Al-Baqarah</p>
+                        <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:12px;">Based on your recent mistake log</p>
+                        <button class="btn-primary" style="padding:8px 12px; font-size:0.8rem;" onclick="switchView('revision')">Start Review</button>
+                    </div>
+
+                    <div class="card card-daily-activity">
+                        <div class="card-title">Daily Activity Tracking</div>
+                        <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:10px;">Session activity across days:</p>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-end; height:50px;" id="activityBars">
+                            <div style="height:10%; width:12%; background:var(--accent-gold); border-radius:2px;"></div>
+                            <div style="height:20%; width:12%; background:var(--primary-green); border-radius:2px;"></div>
+                            <div style="height:15%; width:12%; background:var(--accent-gold); border-radius:2px;"></div>
+                            <div style="height:40%; width:12%; background:var(--primary-green); border-radius:2px;"></div>
+                            <div style="height:10%; width:12%; background:var(--accent-gold); border-radius:2px;"></div>
+                            <div style="height:80%; width:12%; background:var(--primary-green); border-radius:2px;" id="todayBar"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VIEW: QURAN RECITATION WORKSPACE -->
+            <div id="view-recitation" class="workspace-view">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Quran Recitation Studio</span>
+                        <span style="font-size:0.8rem; color:var(--primary-green);" id="recitationSurahMeta">Surah Selection</span>
+                    </div>
+
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; margin-bottom:16px;">
+                        <div class="form-group">
+                            <label>Select Surah</label>
+                            <select id="recitationSurahSelect" class="form-control" onchange="loadQuranText()"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Ayah Range</label>
+                            <div style="display:flex; gap:6px;">
+                                <input type="number" id="ayahStart" class="form-control" value="1" min="1" onchange="loadQuranText()">
+                                <input type="number" id="ayahEnd" class="form-control" value="7" min="1" onchange="loadQuranText()">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Recitation Mode</label>
+                            <select id="recitationModeSelect" class="form-control">
+                                <option value="teacher">Teacher (Immediate Correction)</option>
+                                <option value="practice">Practice (Gentle)</option>
+                                <option value="revision">Revision (Mistake Focus)</option>
+                                <option value="test">Test (Strict Evaluation)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="quran-display-box" id="activeQuranDisplay">
+                        Loading verified Quran text...
+                    </div>
+
+                    <!-- Interruption & Retry Alert Box -->
+                    <div id="mistakeAlertBox" style="display:none; background:#FFEBEE; border:1px solid var(--status-error); padding:16px; border-radius:var(--radius-md); text-align:center; margin-bottom:16px;">
+                        <p style="color:var(--status-error); font-weight:700;" id="spkInstruction">Stop. Please repeat that.</p>
+                        <p style="font-size:0.8rem; color:var(--text-secondary);">Self-correction retry window active</p>
+                        <div style="display:flex; justify-content:center;">
+                            <div class="countdown-circle" id="retryCounter">8</div>
+                        </div>
+                        <button class="btn-primary" style="width:auto; margin:0 auto; padding:6px 16px; background:var(--status-error);" onclick="verifySelfCorrection()">Verify Correction</button>
+                    </div>
+
+                    <div style="display:flex; gap:12px;">
+                        <button id="btnStartStudioRecitation" class="btn-primary" onclick="toggleStudioRecitation()">
+                            <i data-lucide="mic"></i> <span id="studioRecBtnTxt">Start Recitation Engine</span>
+                        </button>
+                        <button class="btn-primary btn-secondary" style="width:auto;" onclick="simulateRecitationMistake()">
+                            <i data-lucide="alert-triangle"></i> Simulate Recitation Mistake
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: HIFZ PRACTICE -->
+            <div id="view-hifz" class="workspace-view">
+                <div class="card">
+                    <div class="card-title">Hifz Memorization & Testing Practice</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Hide verses or reveal word-by-word to test your memory retention.</p>
+                    
+                    <div class="form-group" style="max-width:300px; margin-bottom:16px;">
+                        <label>Select Memorization Surah</label>
+                        <select id="hifzSurahSelect" class="form-control" onchange="loadHifzText()"></select>
+                    </div>
+
+                    <div style="display:flex; gap:10px; margin-bottom:16px;">
+                        <button class="btn-primary btn-secondary" style="width:auto;" onclick="toggleHifzMask(true)">Mask All Verses</button>
+                        <button class="btn-primary btn-secondary" style="width:auto;" onclick="toggleHifzMask(false)">Reveal All Verses</button>
+                    </div>
+
+                    <div class="quran-display-box" id="hifzQuranDisplay">
+                        Select a Surah to practice Hifz.
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: REVISION STUDIO -->
+            <div id="view-revision" class="workspace-view">
+                <div class="card">
+                    <div class="card-title">Revision Studio (Targeted Error Practice)</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Focus specifically on previously recorded recitation mistakes to strengthen your memorization.</p>
+                    <div id="revisionListContainer">
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">No recorded mistakes found for revision.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: TRANSLATION (UPDATED WORKSPACE WITH FULL 20 LANGUAGES) -->
+            <div id="view-translation" class="workspace-view">
+                <div class="card">
+                    <div class="card-title">Verified Quranic Translation Workspace</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:16px;">
+                        <div class="form-group">
+                            <label>Select Surah</label>
+                            <select id="transSurahSelect" class="form-control" onchange="loadTranslationText()"></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Translation Source Language</label>
+                            <!-- System 2: Verified Quran Translation Source Selector -->
+                            <select id="transLangSelect" class="form-control" onchange="loadTranslationText()">
+                                <option value="arabic_uthmani">Arabic — Original Quran Text (Uthmani Script)</option>
+                                <option value="131" selected>English — Clear Quran (Dr. Mustafa Khattab)</option>
+                                <option value="234">Urdu — Fateh Muhammad Jalandhry</option>
+                                <option value="97">Urdu — Mufti Taqi Usmani (Asan Quran)</option>
+                                <option value="77">Turkish — Diyanet İşleri</option>
+                                <option value="122">Hindi — Suhel Farooq Khan and Saifur Rahman Nadwi</option>
+                                <option value="163">Bengali — Muhiuddin Khan</option>
+                                <option value="33">Indonesian — Indonesian Islamic Affairs Ministry</option>
+                                <option value="29">Persian — Hussain Taji Kalimantani</option>
+                                <option value="31">French — Muhammad Hamidullah</option>
+                                <option value="83">Spanish — Julio Cortes</option>
+                                <option value="56">Chinese — Ma Jian</option>
+                                <option value="45">Russian — Elmir Kuliev</option>
+                                <option value="39">Malay — Abdullah Muhammad Basmeih</option>
+                                <option value="103">Portuguese — Helmi Nasr</option>
+                                <option value="27">German — Frank Bubenheim and Nadeem Elyas</option>
+                                <option value="153">Italian — Hamza Roberto Piccardo</option>
+                                <option value="118">Pashto — Abdulwali Khan</option>
+                                <option value="48">Somali — Mahmud Muhammad Abduh</option>
+                                <option value="128">Swahili — Ali Muhsin Al-Barwani</option>
+                                <option value="228">Kazakh — Khalifa Altay</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="translationDisplayBox" style="display:flex; flex-direction:column; gap:16px;">
+                        <!-- Translation verses dynamically injected -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: ASK ISLAMIC QUESTION -->
+            <div id="view-qna" class="workspace-view">
+                <div class="card">
+                    <div class="card-title">Ask Islamic Question (Verified Sources Engine)</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Query verified Quranic and Sahih Hadith literature with citation guarantees.</p>
+                    
+                    <div style="display:flex; gap:8px; margin-bottom:16px;">
+                        <input type="text" id="qnaInput" class="form-control" placeholder="Ask about patience, prayer, fasting, or ethics..." style="flex:1;">
+                        <button class="btn-primary" style="width:auto;" onclick="submitIslamicQuestion()"><i data-lucide="send"></i> Ask Question</button>
+                    </div>
+
+                    <div id="qnaResponseBox" style="display:none; background:var(--bg-main); border:1px solid var(--border-color); padding:16px; border-radius:var(--radius-md);">
+                        <!-- QnA output -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: RECITATION HISTORY -->
+            <div id="view-history" class="workspace-view">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Recitation History Log</span>
+                        <button class="btn-primary btn-secondary" style="width:auto; padding:4px 10px; font-size:0.75rem;" onclick="clearHistoryLog()">Clear History</button>
+                    </div>
+                    <div id="historyTableContainer">
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">No historical recitation logs recorded.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: MISTAKE HISTORY -->
+            <div id="view-mistakes" class="workspace-view">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Detailed Mistake Log</span>
+                        <button class="btn-primary btn-secondary" style="width:auto; padding:4px 10px; font-size:0.75rem;" onclick="clearMistakeLog()">Clear Mistakes</button>
+                    </div>
+                    <div id="mistakeTableContainer">
+                        <p style="font-size:0.85rem; color:var(--text-secondary);">No recitation mistakes currently recorded.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: AUDIO ENHANCEMENT LAB -->
+            <div id="view-audio-lab" class="workspace-view">
+                <div class="card">
+                    <div class="card-title">Audio Enhancement Studio</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Filter out room echo, background hums, and microphone hiss while preserving natural vocal acoustics.</p>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:16px;">
+                        <div style="background:var(--bg-main); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                            <h4 style="font-size:0.9rem; color:var(--primary-green); margin-bottom:8px;">Microphone Input Filter</h4>
+                            <label style="font-size:0.8rem; display:block; margin-bottom:4px;">Noise Suppression Level</label>
+                            <input type="range" id="noiseFilterRange" min="0" max="100" value="75" style="width:100%; margin-bottom:12px;">
+                            <button class="btn-primary" onclick="testAudioFilter()"><i data-lucide="sliders"></i> Apply Live Filter</button>
+                        </div>
+                        <div style="background:var(--bg-main); padding:16px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                            <h4 style="font-size:0.9rem; color:var(--primary-green); margin-bottom:8px;">A/B Audio Comparison</h4>
+                            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:12px;" id="audioFilterStatus">Original Raw Audio Mode Active</p>
+                            <div style="display:flex; gap:8px;">
+                                <button class="btn-primary btn-secondary" style="font-size:0.75rem;" onclick="switchAudioAB('raw')">Play Raw</button>
+                                <button class="btn-primary" style="font-size:0.75rem;" onclick="switchAudioAB('enhanced')">Play Cleaned</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: SETTINGS (UPGRADED PRODUCTION READY CONTROL CENTER) -->
+            <div id="view-settings" class="workspace-view">
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-title">
+                        <span>AI Provider & API Key Management</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">Production Grade Controls</span>
+                    </div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Configure your API keys for real LLM model execution and verify connection status live.</p>
+
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <!-- OpenAI Provider -->
+                        <div style="background:var(--bg-main); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <strong>OpenAI (GPT-4o & Whisper)</strong>
+                                <span id="status-openai" style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:#E5DFD0;">Not Tested</span>
+                            </div>
+                            <input type="password" id="key-openai" class="form-control" placeholder="sk-proj-..." style="margin-bottom:8px;">
+                            <button class="btn-primary" style="padding:6px 12px; font-size:0.75rem;" onclick="testAiConnection('openai')">Test OpenAI Connection</button>
+                        </div>
+
+                        <!-- Gemini Provider -->
+                        <div style="background:var(--bg-main); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <strong>Google Gemini (1.5 Pro)</strong>
+                                <span id="status-gemini" style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:#E5DFD0;">Not Tested</span>
+                            </div>
+                            <input type="password" id="key-gemini" class="form-control" placeholder="AIzaSy..." style="margin-bottom:8px;">
+                            <button class="btn-primary" style="padding:6px 12px; font-size:0.75rem;" onclick="testAiConnection('gemini')">Test Gemini Connection</button>
+                        </div>
+
+                        <!-- Claude Provider -->
+                        <div style="background:var(--bg-main); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <strong>Anthropic Claude (3.5 Sonnet)</strong>
+                                <span id="status-anthropic" style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:#E5DFD0;">Not Tested</span>
+                            </div>
+                            <input type="password" id="key-anthropic" class="form-control" placeholder="sk-ant-..." style="margin-bottom:8px;">
+                            <button class="btn-primary" style="padding:6px 12px; font-size:0.75rem;" onclick="testAiConnection('anthropic')">Test Claude Connection</button>
+                        </div>
+
+                        <!-- DeepSeek Provider -->
+                        <div style="background:var(--bg-main); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-color);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                                <strong>DeepSeek (V3 Chat & Logic)</strong>
+                                <span id="status-deepseek" style="font-size:0.7rem; padding:2px 8px; border-radius:10px; background:#E5DFD0;">Not Tested</span>
+                            </div>
+                            <input type="password" id="key-deepseek" class="form-control" placeholder="sk-..." style="margin-bottom:8px;">
+                            <button class="btn-primary" style="padding:6px 12px; font-size:0.75rem;" onclick="testAiConnection('deepseek')">Test DeepSeek Connection</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Task Routing Section -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-title">Task-Based AI Model Routing</div>
+                    <p style="font-size:0.85rem; color:var(--text-secondary); margin-bottom:16px;">Assign dedicated AI providers to perform specific application features.</p>
+                    
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <div class="form-group">
+                            <label>Recitation Real-time Analysis</label>
+                            <select id="route-recitation" class="form-control" onchange="saveTaskRouting()">
+                                <option value="openai">OpenAI GPT-4o (Default)</option>
+                                <option value="gemini">Google Gemini 1.5 Pro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Mistake & Phoneme Detection</label>
+                            <select id="route-mistake" class="form-control" onchange="saveTaskRouting()">
+                                <option value="gemini" selected>Google Gemini 1.5 Pro (Default)</option>
+                                <option value="openai">OpenAI GPT-4o</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Islamic QA Engine</label>
+                            <select id="route-qna" class="form-control" onchange="saveTaskRouting()">
+                                <option value="anthropic" selected>Anthropic Claude 3.5 Sonnet (Default)</option>
+                                <option value="deepseek">DeepSeek Chat</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Translation & Commentary Engine</label>
+                            <select id="route-translation" class="form-control" onchange="saveTaskRouting()">
+                                <option value="deepseek" selected>DeepSeek V3 (Default)</option>
+                                <option value="openai">OpenAI GPT-4o</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Health Diagnostics Card -->
+                <div class="card" style="margin-bottom: 20px;">
+                    <div class="card-title">Live System Health & Diagnostics</div>
+                    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px;" id="diagnosticsGrid">
+                        <div style="background:var(--bg-main); padding:10px; border-radius:var(--radius-md);">
+                            <span style="font-size:0.7rem; color:var(--text-secondary);">Quran API</span>
+                            <p id="diag-quran" style="font-weight:700; color:var(--status-success);">Operational</p>
+                        </div>
+                        <div style="background:var(--bg-main); padding:10px; border-radius:var(--radius-md);">
+                            <span style="font-size:0.7rem; color:var(--text-secondary);">Microphone</span>
+                            <p id="diag-mic" style="font-weight:700; color:var(--text-primary);">Checking...</p>
+                        </div>
+                        <div style="background:var(--bg-main); padding:10px; border-radius:var(--radius-md);">
+                            <span style="font-size:0.7rem; color:var(--text-secondary);">Local Storage</span>
+                            <p id="diag-storage" style="font-weight:700; color:var(--status-success);">Available</p>
+                        </div>
+                        <div style="background:var(--bg-main); padding:10px; border-radius:var(--radius-md);">
+                            <span style="font-size:0.7rem; color:var(--text-secondary);">Active AI Provider</span>
+                            <p id="diag-ai" style="font-weight:700; color:var(--primary-green);">OpenAI</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- General App Settings -->
+                <div class="card">
+                    <div class="card-title">General Application Preferences</div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <div class="form-group">
+                            <label>Retry Countdown Window (Seconds)</label>
+                            <select id="cfgRetryWindow" class="form-control" onchange="saveGeneralSettings()">
+                                <option value="5">5 Seconds</option>
+                                <option value="8" selected>8 Seconds (Default)</option>
+                                <option value="10">10 Seconds</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Quran Arabic Font Size</label>
+                            <select id="cfgFontSize" class="form-control" onchange="updateQuranFontSize(this.value); saveGeneralSettings();">
+                                <option value="1.6rem">Normal</option>
+                                <option value="2rem" selected>Large (Default)</option>
+                                <option value="2.5rem">Extra Large</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Interruption Confidence Threshold</label>
+                            <select id="cfgConfidence" class="form-control" onchange="saveGeneralSettings()">
+                                <option value="high" selected>High Confidence Only (Prevents False Positives)</option>
+                                <option value="medium">Medium Sensitivity</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Data Management</label>
+                            <button class="btn-primary btn-stop" style="margin-top:4px;" onclick="resetAllApplicationData()">Reset Local App Data</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
